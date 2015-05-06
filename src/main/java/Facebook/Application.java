@@ -1,4 +1,4 @@
-package FacebookSync;
+package Facebook;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
