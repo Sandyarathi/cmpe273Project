@@ -30,7 +30,7 @@ public class FController {
         String accessToken = token.getAccessToken();
         FacebookClient fbClient = new DefaultFacebookClient(accessToken);
         FacebookDesign fb = new FacebookDesign();
-        TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
+        //TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
         //TreeMap<String, ArrayList<UPost>> allPosts = fb.getAllPost(fbClient);
         if (!allPosts.isEmpty())
             return new ResponseEntity<>(allPosts, HttpStatus.OK);

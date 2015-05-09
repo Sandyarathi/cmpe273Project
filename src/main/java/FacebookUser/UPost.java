@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * Class holds Facebook data
  * Created by Nakul Sharma on 18-04-2015.
  */
-public class UPost implements Comparable<UPost> {
+public class UPost implements Comparable<UPost>
+{
 
     private String userId;
     private String postId;
@@ -142,6 +143,16 @@ public class UPost implements Comparable<UPost> {
         return this.postMonth + "-" + this.postYear;
     }
 
-
+    @Override
+    public int compareTo(UPost other) {
+        long r1 = this.rating;
+        long r2 = other.rating;
+        if (r1 < r2)
+            return 1;
+        else if (r1 > r2)
+            return -1;
+        else
+            return 0;
+    }
 
 }
