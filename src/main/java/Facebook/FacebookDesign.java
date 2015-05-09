@@ -25,6 +25,37 @@ public class FacebookDesign {
 */
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
+        Date oneYearAgo = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 365L);
+        String userId, postMonth = "WrongMonth", postYear;
+        SimpleDateFormat month = new SimpleDateFormat("MM");
+        SimpleDateFormat year = new SimpleDateFormat("yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+        DateFormatSymbols dfs = new DateFormatSymbols();
+        String[] alphabeticMonth = dfs.getMonths();
+        Date date = new Date();
+        int flag = 0;
+        User me = fbClient.fetchObject("me", com.restfb.types.User.class, Parameter.with("fields", "id"));
+        userId = me.getId();
+        Date currentDate = dateFormat.parse(dateFormat.format(date));
+        Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields",
+                        "id,message,description,status_type,type, story, created_time"), Parameter.with("until", "yesterday"),
+                Parameter.with("since", oneYearAgo));
+
+        for (Post p : userPost.getData()) {
+            int numericMonth = Integer.parseInt(month.format(p.getCreatedTime()));
+            if (numericMonth >= 1 && numericMonth <= 12) {
+                postMonth = alphabeticMonth[numericMonth - 1];
+            }
+            Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields",
+                    "likes.summary(true),comments.summary(true)"));
+            UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType
+                    (), count.getLikesCount(), count.getCommentsCount());
+            post.setStory(p.getStory());
+            post.setType(p.getType());
+            post.setDescription(p.getDescription());
+            post.setPostYear(postYear);
+            monthPost.add(post);
+        }
 
         return posts;
     }
