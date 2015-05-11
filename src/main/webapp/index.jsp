@@ -24,7 +24,7 @@
         <p>A free site to find top moments from Facebook</p>
     </header>
     <footer>
-        <a href="https://www.facebook.com/dialog/oauth?client_id=403024159903643&redirect_uri=http://localhost:8080/welcome.jsp&scope=user_posts,email" class="button scrolly">Login To Facebook</a>
+        <a href="https://www.facebook.com/dialog/oauth?client_id=403024159903643&redirect_uri=http://localhost:8080/welcome.jsp/action&scope=user_posts,email" class="button scrolly">Login To Facebook</a>
     </footer>
 </section>
 </body>

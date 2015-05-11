@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.*;
 
 @RestController
 public class FController {
     private static final Logger logger = Logger.getLogger(FController.class);
-    // private FacebookClient fbClient;
+
 
     /*--------------------------Welcome Page ---------------------------------*/
     @RequestMapping(value = "welcome.jsp/action", method = RequestMethod.GET)
@@ -30,19 +30,14 @@ public class FController {
         String accessToken = token.getAccessToken();
         FacebookClient fbClient = new DefaultFacebookClient(accessToken);
         FacebookDesign fb = new FacebookDesign();
-        //TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
-        //TreeMap<String, ArrayList<UPost>> allPosts = fb.getAllPost(fbClient);
-        if (!allPosts.isEmpty())
-            return new ResponseEntity<>(allPosts, HttpStatus.OK);
+        TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
+        NavigableMap<String, ArrayList<UPost>> nmap = allPosts.descendingMap();
+        if (!nmap.isEmpty())
+            return new ResponseEntity<>(nmap, HttpStatus.OK);
         else
             return new ResponseEntity<>("There are no Highlights to display currently", HttpStatus.BAD_REQUEST);
     }
 
-   /* public TreeMap<String, ArrayList<UPost>> getResults() {
-        FacebookDesign fb = new FacebookDesign(this.fbClient);
-        return fb.getHighlights();
-    }
-*/
 
     /*---------------------------------Generate User Token --------------------------------------------------*/
     private FacebookClient.AccessToken getFacebookUserToken(String code, String redirectUrl) throws IOException {

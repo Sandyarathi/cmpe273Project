@@ -10,19 +10,17 @@ import com.restfb.types.User;
 
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.*;
 
 /**
  * Class calls functions to fetch User's FacebookDesign Highlights
- * Created by Nakul Sharma on 20-04-2015.
+ * Created by Nakul Sharma on 04-20-2015
+ * Updated by Nakul Sharma on 05-10-2015
  */
 public class FacebookDesign {
 
-    /*  private FacebookClient fbClient;
-      FacebookDesign(FacebookClient fbClient){
-          this.fbClient=fbClient;
-      }
-  */
+
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
         ArrayList<UPost> monthPost = new ArrayList<>();
@@ -33,6 +31,7 @@ public class FacebookDesign {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
         DateFormatSymbols dfs = new DateFormatSymbols();
         String[] alphabeticMonth = dfs.getMonths();
+        String message;
         Date date = new Date();
         int flag = 0;
         try {
@@ -47,24 +46,34 @@ public class FacebookDesign {
                         postMonth = alphabeticMonth[numericMonth - 1];
                     }
                     postYear = year.format(p.getCreatedTime());
-                    // System.out.println("Current Month: " + postMonth + " & Year: " + postYear + " & Flag: " + flag);
                     if (!currentDate.equals(dateFormat.parse(postYear + "-" + numericMonth))) {
                         Collections.sort(monthPost);
+                        if(!monthPost.isEmpty())
                         posts.put(dateFormat.format(currentDate), monthPost);
                         currentDate = dateFormat.parse(postYear + "-" + numericMonth);
                         flag = 1;
-                        // System.out.println("Date: " + dateFormat.format(currentDate) + " Flag: " + flag);
                     } else {
                         flag = 0;
                     }
-                    // System.out.println("Current Month: " + postMonth + " & Year: " + postYear + " & Flag: " + flag);
                     switch (flag) {
                         case 0:
                             Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count.getLikesCount(), count.getCommentsCount());
+                            if (p.getDescription() != null)
+                                message = p.getDescription();
+                            else if (p.getMessage() != null)
+                                message = p.getMessage();
+                            else if (p.getStory() !=null)
+                                message=p.getStory();
+                            else if (p.getStatusType() != null)
+                                message = p.getStatusType();
+                            else if (p.getType() != null)
+                                message = p.getType();
+                            else
+                                message = "Default Message: User did not mention any message";
                             post.setStory(p.getStory());
                             post.setType(p.getType());
-                            post.setDescription(p.getDescription());
+                            post.setDescription(message);
                             post.setPostYear(postYear);
                             monthPost.add(post);
                             break;
@@ -72,9 +81,21 @@ public class FacebookDesign {
                             monthPost = new ArrayList<>();
                             Post count1 = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post1 = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count1.getLikesCount(), count1.getCommentsCount());
+                            if (p.getDescription() != null)
+                                message = p.getDescription();
+                            else if (p.getMessage() != null)
+                                message = p.getMessage();
+                            else if (p.getStory() !=null)
+                                message=p.getStory();
+                            else if (p.getStatusType() != null)
+                                message = p.getStatusType();
+                            else if (p.getType() != null)
+                                message = p.getType();
+                            else
+                                message = "Default Message: User did not mention any message";
                             post1.setStory(p.getStory());
                             post1.setType(p.getType());
-                            post1.setDescription(p.getDescription());
+                            post1.setDescription(message);
                             post1.setPostYear(postYear);
                             monthPost.add(post1);
                             break;
@@ -117,7 +138,6 @@ public class FacebookDesign {
         }
         return highlights;
     }
-
 
 
 }
