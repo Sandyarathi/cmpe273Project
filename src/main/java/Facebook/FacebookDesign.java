@@ -92,6 +92,32 @@ public class FacebookDesign {
         return posts;
     }
 
+    public TreeMap<String, ArrayList<UPost>> getHighlights(FacebookClient fbClient) {
+        TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<>();
+        for (Map.Entry<String, ArrayList<UPost>> entry : getAllPost(fbClient).entrySet()) {
+            String key = entry.getKey();
+            ArrayList<UPost> value = entry.getValue();
+            ArrayList<UPost> topPost = new ArrayList<>();
+            Iterator it = value.iterator();
+            int flag = 0, count = 0;
+            while (flag == 0) {
+                if (it.hasNext()) {
+                    if (count < 5) {
+                        topPost.add((UPost) it.next());
+                        count++;
+                        flag = 0;
+                    } else {
+                        flag = 1;
+                        count = 1;
+                    }
+                } else
+                    flag = 1;
+            }
+            highlights.put(key, topPost);
+        }
+        return highlights;
+    }
+
 
 
 }
