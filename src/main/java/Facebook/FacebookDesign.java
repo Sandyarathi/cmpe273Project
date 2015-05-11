@@ -18,11 +18,11 @@ import java.util.*;
  */
 public class FacebookDesign {
 
-   private FacebookClient fbClient;
+  /* private FacebookClient fbClient;
     FacebookDesign(FacebookClient fbClient){
         this.fbClient=fbClient;
     }
-
+*/
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
         Date oneYearAgo = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 365L);
@@ -56,7 +56,6 @@ public class FacebookDesign {
                     } else {
                         flag = 0;
                     }
-
                             Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count.getLikesCount(), count.getCommentsCount());
                             post.setStory(p.getStory());
