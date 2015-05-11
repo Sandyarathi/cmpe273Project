@@ -18,13 +18,14 @@ import java.util.*;
  */
 public class FacebookDesign {
 
-  /* private FacebookClient fbClient;
-    FacebookDesign(FacebookClient fbClient){
-        this.fbClient=fbClient;
-    }
-*/
+    /*  private FacebookClient fbClient;
+      FacebookDesign(FacebookClient fbClient){
+          this.fbClient=fbClient;
+      }
+  */
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
+        ArrayList<UPost> monthPost = new ArrayList<>();
         Date oneYearAgo = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 365L);
         String userId, postMonth = "WrongMonth", postYear;
         SimpleDateFormat month = new SimpleDateFormat("MM");
@@ -52,10 +53,13 @@ public class FacebookDesign {
                         posts.put(dateFormat.format(currentDate), monthPost);
                         currentDate = dateFormat.parse(postYear + "-" + numericMonth);
                         flag = 1;
-
+                        // System.out.println("Date: " + dateFormat.format(currentDate) + " Flag: " + flag);
                     } else {
                         flag = 0;
                     }
+                    // System.out.println("Current Month: " + postMonth + " & Year: " + postYear + " & Flag: " + flag);
+                    switch (flag) {
+                        case 0:
                             Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count.getLikesCount(), count.getCommentsCount());
                             post.setStory(p.getStory());
@@ -64,7 +68,16 @@ public class FacebookDesign {
                             post.setPostYear(postYear);
                             monthPost.add(post);
                             break;
-
+                        case 1:
+                            monthPost = new ArrayList<>();
+                            Post count1 = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
+                            UPost post1 = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count1.getLikesCount(), count1.getCommentsCount());
+                            post1.setStory(p.getStory());
+                            post1.setType(p.getType());
+                            post1.setDescription(p.getDescription());
+                            post1.setPostYear(postYear);
+                            monthPost.add(post1);
+                            break;
                     }
                 }
                 userPost = fbClient.fetchConnectionPage(userPost.getNextPageUrl(), Post.class);
@@ -76,33 +89,9 @@ public class FacebookDesign {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        return posts;
     }
 
-    public TreeMap<String, ArrayList<UPost>> getHighlights(FacebookClient fbClient) {
-        TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<>();
-        for (Map.Entry<String, ArrayList<UPost>> entry : getAllPost(fbClient).entrySet()) {
-            String key = entry.getKey();
-            ArrayList<UPost> value = entry.getValue();
-            ArrayList<UPost> topPost = new ArrayList<>();
-            Iterator it = value.iterator();
-            int flag = 0, count = 0;
-            while (flag == 0) {
-                if (it.hasNext()) {
-                    if (count < 5) {
-                        topPost.add((UPost) it.next());
-                        count++;
-                        flag = 0;
-                    } else {
-                        flag = 1;
-                        count = 1;
-                    }
-                } else
-                    flag = 1;
-            }
-            highlights.put(key, topPost);
-        }
-        return highlights;
-    }
 
 
 }
