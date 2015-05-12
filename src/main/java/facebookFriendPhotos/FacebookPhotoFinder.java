@@ -73,7 +73,7 @@ public class FacebookPhotoFinder {
 				"me/photos", Photo.class, Parameter.with("until", "yesterday"),
 				Parameter.with("since", oneYearAgo));
 
-		/**for (List<Photo> photoList : photoCollection) {
+		for (List<Photo> photoList : photoCollection) {
 			userPhotos.addAll(photoList);
 		}
 		photoCollection = fbClient.fetchConnection("me/photos/uploaded",
