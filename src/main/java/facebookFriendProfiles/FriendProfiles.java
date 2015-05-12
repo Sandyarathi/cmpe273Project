@@ -19,12 +19,12 @@ public class FriendProfiles {
 		User user = fbClient.fetchObject("me", User.class);
 		Connection<User> myFriends = fbClient.fetchConnection("me/friends", User.class,Parameter.with("fields", "id, name,picture"));
 		List<User> myFriendsList = myFriends.getData();
-		/*for (User friend: myFriendsList){
+		for (User friend: myFriendsList){
 			System.out.println(friend.getPicture());
 			friendProfilePhotos.add( friend.getPicture());
 			
 			
-		}*/
+		}
 		
 		return friendProfilePhotos ;
 	}
