@@ -14,8 +14,7 @@ import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-//@Autowired
-    //MongoOperations repo;
+    
     /*public String[] postClassAttributes = {"userId","postId","postMessage","postMonth","postYear","statusType","story","type","description"
     ,"likesCount","commentCount","rating","postImageURL"};*/
     static String strFirstName;
@@ -140,7 +139,31 @@ import java.util.*;
             MongoClient client = new MongoClient(uri);
             DB db = client.getDB("facebook_moments");
             System.out.println("FirstNAME"+ strFirstName);
-            
+            if(db.collectionExists(strFirstName))
+            {
+                DBCollection storeUpdate = db.getCollection(strFirstName);
+                for(UPost newPost:topPost)
+                {
+                    BasicDBObject oldPostData = new BasicDBObject("UserID",newPost.getUserId());
+                    BasicDBObject newPostData = new BasicDBObject()
+                            .append("UserID",newPost.getUserId())
+                            .append("PostID",newPost.getPostId())
+                            .append("PostMessage",newPost.getPostMessage())
+                            .append("PostMonth",newPost.getPostMonth())
+                            .append("PostYear",newPost.getPostYear())
+                            .append("statusType",newPost.getStatusType())
+                            .append("story",newPost.getStory())
+                            .append("type",newPost.getType())
+                            .append("description",newPost.getDescription())
+                            .append("likescount",newPost.getLikesCount())
+                            .append("rating",newPost.getRating())
+                            .append("postImageURL",newPost.getPostImage());
+                    DBObject update = new BasicDBObject("$set", newPostData);
+                    storeUpdate.updateMulti(oldPostData, update);
+                }
+            }
+            else {
+
                 DBCollection store = db.getCollection(strFirstName);
                 // System.out.println(topPost.size());
                 for (UPost postData : topPost) {
@@ -158,7 +181,8 @@ import java.util.*;
                     post.append("rating", postData.getRating());
                     post.append("postImageURL", postData.getPostImage());
                     store.insert(post);
-                }     
+                }
+            }
         }
         catch(UnknownHostException e)
         {
