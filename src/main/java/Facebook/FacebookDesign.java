@@ -41,7 +41,6 @@ public class FacebookDesign {
             
             userId = me.getId();
             URL profilePicture = new URL("https://graph.facebook.com/" + userId + "/picture?type=large"); //getting profile picture
-            System.out.println("Picture:"+ profilePicture);
             
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
@@ -133,7 +132,6 @@ public class FacebookDesign {
                     flag = 1;
             }
             highlights.put(key, topPost);
-            repo.save(topPost);
         }
         return highlights;
     }
