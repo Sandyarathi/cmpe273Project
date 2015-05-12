@@ -18,8 +18,12 @@ import java.util.*;
  */
 public class FacebookDesign {
 
-
+  /*  private FacebookClient fbClient;
+    FacebookDesign(FacebookClient fbClient){
         this.fbClient=fbClient;
+    }
+*/
+    
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
         ArrayList<UPost> monthPost = new ArrayList<>();
@@ -34,10 +38,11 @@ public class FacebookDesign {
         int flag = 0;
         try {
             User me = fbClient.fetchObject("me", com.restfb.types.User.class, Parameter.with("fields", "id"));
-            User.Picture profilePic = me.getPicture();
-            //System.out.println("Picture:"+ profilePic);             //to get profile picture of USER
-          
-            //WebRequestor.Response accessTokenResponse = wr.executeGet("https://graph.facebook.com/oauth/access_token?client_id=" + appId + "&redirect_uri="
+            
+            userId = me.getId();
+            URL profilePicture = new URL("https://graph.facebook.com/" + userId + "/picture?type=large"); //getting profile picture
+            System.out.println("Picture:"+ profilePicture);
+            
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
             do {
@@ -128,10 +133,10 @@ public class FacebookDesign {
                     flag = 1;
             }
             highlights.put(key, topPost);
+            repo.save(topPost);
         }
         return highlights;
     }
-            repo.save(topPost);
 
 }
 
