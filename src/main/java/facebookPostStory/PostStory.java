@@ -18,7 +18,7 @@ public class PostStory {
 	    		   fbClient.publish("me/feed", FacebookType.class,
 	    		     Parameter.with("message", postMessage));
 
-			System.out.println("Published message ID: " + publishMessageResponse.getId());
+			//System.out.println("Published message ID: " + publishMessageResponse.getId());
 			return publishMessageResponse;	
 		
 	}
