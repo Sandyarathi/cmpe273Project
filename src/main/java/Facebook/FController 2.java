@@ -58,13 +58,13 @@ public class FController {
 		FacebookType publishMessageResponse = publishStory(STORY, fbClient);
 
 		/** Get Profile photos of Friends Example **/
-		List<Picture> friendProfilePhotos = getProfilePhotos(fbClient);
+		//List<Picture> friendProfilePhotos = getProfilePhotos(fbClient);
 
 		/** Get all posts of user Example **/
 		TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
 
 		/** Get common photos of user Example **/
-		List<Photo> photoMoments = getPhotoMoments(allPosts, fbClient);
+		//List<Photo> photoMoments = getPhotoMoments(allPosts, fbClient);
 
 		if (!allPosts.isEmpty())
 			return new ResponseEntity<>(allPosts, HttpStatus.OK);
