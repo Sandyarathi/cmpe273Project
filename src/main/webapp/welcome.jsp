@@ -30,6 +30,8 @@
     <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
     <link href="css/styles.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="../profile.js"></script>
     <link rel="shortcut icon" type="image/ico" href="image/favicon.ico" />
     <script>
         function myFunction(i) {
@@ -74,8 +76,7 @@
         tok.setAttribute("token", fb.token);
     }
     fb.fbClient = new DefaultFacebookClient(fb.token.getAccessToken(),Version.VERSION_2_2);
-    User me = fb.getInfo();
-    String profilePicture = "https://graph.facebook.com/" + me.getId() + "/picture?type=large";
+
 %>
 
 <div class="wrapper">
@@ -110,7 +111,7 @@
 
                         <ul class="nav navbar-nav navbar-right">
                             <li class="dropdown">
-                                <a><%=me.getFirstName()%> <%=me.getLastName()%></a>
+                                <a class="name-id"></a>
                             </li>
                             <li class="dropdown">
                                 <a href="<%=fb.fbClient.getLogoutUrl("http://localhost:8080/index.jsp")%>" style="border-left-style: solid; border-left-width: 1px; border-color: #98AFC7" >Logout</a>
@@ -130,10 +131,9 @@
                             <div class="col-sm-5" style="width: 21%" >
 
                                 <div class="panel panel-default">
-                                    <div class="panel-thumbnail"><img src="<%=profilePicture%>" class="img-responsive"></div>
+                                    <div class="panel-thumbnail"><img id="profile-pic" class="img-responsive"></div>
 
                                 </div>
-
 
                                 <div class="panel panel-default">
                                     <div class="panel-heading"> <h4>Information</h4></div>
@@ -145,31 +145,31 @@
                                             </tr>
                                             <tr>
 
-                                                <td style="font-size: small"><i><%=me.getBirthday()%></i></td>
+                                                <td class="birth-id"  style="font-size: small"><i></i></td>
                                             </tr>
                                             <tr>
                                                 <td style="font-size: small; color: #2A4888">Hometown:</td>
                                             </tr>
                                             <tr>
-                                                <td style="font-size: small"><i><%=me.getHometown().getName()%></i></td>
+                                                <td class="home-id" style="font-size: small"><i></i></td>
                                             </tr>
                                             <tr>
                                                 <td style="font-size: small; color: #2A4888">Gender:</td>
                                             </tr>
                                             <tr>
-                                                <td style="font-size: small"><i><%=me.getGender()%></i></td>
+                                                <td class="gender-id" style="font-size: small"><i></i></td>
                                             </tr>
                                             <tr>
                                                 <td style="font-size: small; color: #2A4888">Interested In:</td>
                                             </tr>
                                             <tr>
-                                                <td style="font-size: small"><i><%=me.getInterestedIn().get(0)%></i></td>
+                                                <td class="interest-id" style="font-size: small"><i></i></td>
                                             </tr>
                                             <tr>
                                                 <td style="font-size: small; color: #2A4888">Relationship Status:</td>
                                             </tr>
                                             <tr>
-                                                <td style="font-size: small"><i><%=me.getRelationshipStatus()%></i></td>
+                                                <td class="relation-id" style="font-size: small"><i></i></td>
                                             </tr>
                                         </table>
 
@@ -178,47 +178,9 @@
 
                                 <div class="panel panel-default">
                                     <div class="panel-heading"> <h4>Friends</h4></div>
-                                    <div class="panel-body" style="height:205px;overflow: auto" >
+                                    <div id="manualCsoCodes" class="panel-body" style="height:205px;overflow: auto" >
 
-                                     <table>
-                                         <%
-                                             HashMap<String, String> h = fb.getFriends();
-                                             Iterator it = h.entrySet().iterator();
-                                             while (it.hasNext()) {
-                                                 Map.Entry pair = (Map.Entry)it.next();
-                                         %>
 
-                                         <tr>
-                                             <td><img src="<%=pair.getValue()%>"/> <br/>
-                                                <span style="font-size: xx-small; " ><%=pair.getKey()%></span>
-                                             </td>
-                                             <%
-                                                 if (it.hasNext()) {
-                                                     pair = (Map.Entry)it.next();
-                                             %>
-                                             <td><img src="<%=pair.getValue()%>"/> <br/>
-                                                 <span style="font-size: xx-small " ><%=pair.getKey()%></span>
-                                             </td>
-                                             <%
-                                                 }
-                                                 if (it.hasNext()) {
-                                                     pair = (Map.Entry)it.next();
-                                             %>
-                                             <td><img src="<%=pair.getValue()%>"/> <br/>
-                                                 <span style="font-size: xx-small " ><%=pair.getKey()%></span>
-                                             </td>
-
-                                             <%
-                                                 }
-                                             %>
-
-                                         </tr>
-
-                                         <%
-
-                                             }
-                                         %>
-                                     </table>
                                     </div>
                                 </div>
                                 <div class="panel panel-default">
@@ -272,14 +234,20 @@
 
                                 <div class="well">
                                     <form class="form" action="#"  METHOD="POST">
-                                        <h4>Write somthing...</h4>
+                                        <h4>Write something...</h4>
                                         <div class="input-group text-center">
                                             <input type="text" class="form-control input-lg" id="mess" name="mess">
                                             <span class="input-group-btn"><button class="btn btn-lg btn-primary" onclick="myShare()"  type="submit">Share</button></span>
                                         </div>
                                     </form>
                                 </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading"><h4>Top Get Moments</h4></div>
+                                    <div id="moments" class="panel-body">
 
+
+                                    </div>
+                                </div>
                                 <div class="panel panel-default">
                                     <div class="panel-heading"><h4>Top Moments</h4></div>
                                     <div class="panel-body">
