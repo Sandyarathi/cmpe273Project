@@ -15,8 +15,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
     
-    /*public String[] postClassAttributes = {"userId","postId","postMessage","postMonth","postYear","statusType","story","type","description"
-    ,"likesCount","commentCount","rating","postImageURL"};*/
     static String strFirstName;
 
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
@@ -35,7 +33,7 @@ import java.util.*;
             User me = fbClient.fetchObject("me", com.restfb.types.User.class);
             userId = me.getId();
             strFirstName = me.getFirstName();
-            System.out.println(strFirstName);
+            
             String profilePicture = "https://graph.facebook.com/" + userId + "/picture?width=130&height=130";
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time, picture"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
@@ -138,7 +136,6 @@ import java.util.*;
         try {
             MongoClient client = new MongoClient(uri);
             DB db = client.getDB("facebook_moments");
-            System.out.println("FirstNAME"+ strFirstName);
             if(db.collectionExists(strFirstName))
             {
                 DBCollection storeUpdate = db.getCollection(strFirstName);
@@ -191,45 +188,6 @@ import java.util.*;
     }
     public User getAbout(FacebookClient fbClient){
         User me = fbClient.fetchObject("me", com.restfb.types.User.class);
-        String strFirstName = me.getFirstName();
-        Facebook.User user1 = new Facebook.User();
-        user1.setStrName(strFirstName);
-        //repo.save(user1);
-        System.out.println("FirstName:" + strFirstName);
-        String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
-        MongoClientURI uri = new MongoClientURI(textUri);
-       /* try {
-            MongoClient client = new MongoClient(uri);
-            DB db = client.getDB("facebook_moments");
-            DBCollection store = db.getCollection(strFirstName);
-            if (db.collectionExists(strFirstName)) {
-
-                //BasicDBObject newUser = new BasicDBObject();
-                //newUser.replace("Username",newUser.get("Username"),"Jihirsha");
-                //store.save(newUser);
-                DBObject query = new BasicDBObject("Username", user1.getStrName());
-                DBObject put = new BasicDBObject().append("Username", "Jihirsha");
-                DBObject update = new BasicDBObject("$set", put);
-                store.update(query, update);
-            }
-            else
-             {
-                BasicDBObject postUser = new BasicDBObject();
-                postUser.append("Username", strFirstName);
-                store.insert(postUser);
-
-            }
-        }
-        catch(UnknownHostException e)
-        {
-            System.out.println("Could not connected");
-        }
-        //if(repo == null)
-        {
-            //System.out.println("Null REPO");
-        }
-        //System.out.println(repo.toString());
-        //repo.save(strFirstName);*/
         return me;
     }
 
