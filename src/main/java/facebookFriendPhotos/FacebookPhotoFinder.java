@@ -65,7 +65,7 @@ public class FacebookPhotoFinder {
 		return new ArrayList<String>(friendIDs);
 	}
 
-	/*private List<Photo> getUserPhotos(FacebookClient fbClient) {
+	private List<Photo> getUserPhotos(FacebookClient fbClient) {
 		List<Photo> userPhotos = new ArrayList<Photo>();
 		Date oneYearAgo = new Date(System.currentTimeMillis() - 1000L * 60L
 				* 60L * 24L * 365L);
@@ -73,7 +73,7 @@ public class FacebookPhotoFinder {
 				"me/photos", Photo.class, Parameter.with("until", "yesterday"),
 				Parameter.with("since", oneYearAgo));
 
-		for (List<Photo> photoList : photoCollection) {
+		/**for (List<Photo> photoList : photoCollection) {
 			userPhotos.addAll(photoList);
 		}
 		photoCollection = fbClient.fetchConnection("me/photos/uploaded",
@@ -87,7 +87,7 @@ public class FacebookPhotoFinder {
 			//System.out.println(photo.getSource());
 		//}
 		return userPhotos;
-	}*/
+	}
 
 	/*private Set<Photo> getPhotoSet(List<String> friendIDs,
 			List<Photo> userPhotos) {
