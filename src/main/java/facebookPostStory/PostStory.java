@@ -16,7 +16,7 @@ public class PostStory {
 	public FacebookType PostOnWall(FacebookClient fbClient, String postMessage) throws FacebookException{
 			FacebookType publishMessageResponse =
 	    		   fbClient.publish("me/feed", FacebookType.class,
-	    		     //Parameter.with("message", postMessage));
+	    		     Parameter.with("message", postMessage));
 
 			System.out.println("Published message ID: " + publishMessageResponse.getId());
 			return publishMessageResponse;	
