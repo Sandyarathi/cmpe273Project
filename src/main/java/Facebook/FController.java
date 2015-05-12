@@ -1,146 +1,158 @@
 package Facebook;
 
-import java.io.IOException;
-import java.util.ArrayList;
+        import FacebookUser.UPost;
+        import com.restfb.DefaultFacebookClient;
+        import com.restfb.DefaultWebRequestor;
+        import com.restfb.FacebookClient;
+        import com.restfb.WebRequestor;
+        import com.restfb.json.JsonArray;
+        import org.apache.log4j.Logger;
+        import org.springframework.http.HttpStatus;
+        import org.springframework.http.ResponseEntity;
+        import org.springframework.web.bind.annotation.RequestMapping;
+        import org.springframework.web.bind.annotation.RequestMethod;
+        import org.springframework.web.bind.annotation.RequestParam;
+        import org.springframework.web.bind.annotation.RestController;
+
+        import java.io.IOException;
+        import java.util.ArrayList;
+        import java.util.HashMap;
+        import java.util.TreeMap;
+        import com.restfb.types.User;
+        import com.restfb.types.FacebookType;
+        import com.restfb.types.Photo;
+        import com.restfb.types.User.Picture;
+
+        import facebookFriendPhotos.FacebookPhotoFinder;
+        import facebookFriendProfiles.FriendProfiles;
+        import facebookPostStory.PostStory;
+        import  java.util.Map;
+        import org.json.simple.JSONObject;
+        import org.json.simple.JSONArray;
 import java.util.List;
-import java.util.TreeMap;
-
-import org.apache.log4j.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import FacebookUser.UPost;
-
-import com.restfb.DefaultFacebookClient;
-import com.restfb.DefaultWebRequestor;
-import com.restfb.FacebookClient;
-import com.restfb.WebRequestor;
-import com.restfb.types.FacebookType;
-import com.restfb.types.Photo;
-import com.restfb.types.User.Picture;
-
-import facebookFriendPhotos.FacebookPhotoFinder;
-import facebookFriendProfiles.FriendProfiles;
-import facebookPostStory.PostStory;
-
 @RestController
 public class FController {
-	private static final Logger logger = Logger.getLogger(FController.class);
+    private static final Logger logger = Logger.getLogger(FController.class);
+    public static String redirectUrl   = "http://localhost:8080/welcome.jsp";
+    public static FacebookClient fbClient;
+    public static FacebookClient.AccessToken token;
+    FacebookPhotoFinder facebookPhotoFinder = new FacebookPhotoFinder();
 
-	FacebookPhotoFinder facebookPhotoFinder = new FacebookPhotoFinder();
+    PostStory postStory = new PostStory();
 
-	PostStory postStory = new PostStory();
+    FriendProfiles friends = new FriendProfiles();
 
-	FriendProfiles friends = new FriendProfiles();
+    FacebookDesign fb = new FacebookDesign();
+    Mail mail = new Mail();
 
-	FacebookDesign fb = new FacebookDesign();
+    /*--------------------------Welcome Page ---------------------------------*/
+    /*@RequestMapping(value = "/action", method = RequestMethod.GET)
+    public ResponseEntity fbConnect(@RequestParam(value = "code") String code) throws IOException {
+        String redirectUrl = "http://localhost:8080/welcome.jsp/action";
+        FacebookClient.AccessToken token = getFacebookUserToken(code, redirectUrl);
+        String accessToken = token.getAccessToken();
+        FacebookClient fbClient = new DefaultFacebookClient(accessToken);
+        FacebookDesign fb = new FacebookDesign();
+        TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
+        //TreeMap<String, ArrayList<UPost>> allPosts = fb.getAllPost(fbClient);
+        if (!allPosts.isEmpty())
+            return new ResponseEntity(allPosts, HttpStatus.OK);
+        else
+            return new ResponseEntity("There are no Highlights to display currently", HttpStatus.BAD_REQUEST);
+    }*/
 
-	private static final String REDIRECT_URL = "http://localhost:8080/welcome.jsp/action";
 
-	private final static String STORY = "Version 9 WallCheck ";
+    public TreeMap<String, ArrayList<UPost>> getResults() {
+        FacebookDesign fb = new FacebookDesign();
+        return fb.getHighlights(fbClient);
+    }
+    @RequestMapping(value = "/highlights", method = RequestMethod.GET)
+    public JSONArray getResult() {
+        FacebookDesign fb = new FacebookDesign();
+        return fb.getHighlight(fbClient);
+    }
 
-	/*--------------------------Welcome Page ---------------------------------*/
-	@SuppressWarnings("rawtypes")
-	@RequestMapping(value = "welcome.jsp/action", method = RequestMethod.GET)
-	public ResponseEntity fbConnect(@RequestParam(value = "code") String code)
-			throws IOException {
-		FacebookClient.AccessToken token = getFacebookUserToken(code,
-				REDIRECT_URL);
-		String accessToken = token.getAccessToken();
-		FacebookClient fbClient = new DefaultFacebookClient(accessToken);
-		getUserPermissions(accessToken);
+    @RequestMapping(value = "/userName", method = RequestMethod.GET)
+    public String getMyData() {
+        FacebookDesign fb = new FacebookDesign();
+        User me = fb.getAbout(fbClient);
+        String name =   me.getFirstName() + " " +   me.getLastName();
+        return name;
+    }
 
-		/** Publish story to FB wall Example **/
-		FacebookType publishMessageResponse = publishStory(STORY, fbClient);
+    @RequestMapping(value = "/profilePic", method = RequestMethod.GET)
+    public String getProfilePic() {
+        FacebookDesign fb = new FacebookDesign();
+        User me = fb.getAbout(fbClient);
+        String profilePicture = "https://graph.facebook.com/" + me.getId() + "/picture?type=large";
+        return profilePicture;
+    }
 
-		/** Get Profile photos of Friends Example **/
-		List<Picture> friendProfilePhotos = getProfilePhotos(fbClient);
+    public User getInfo() {
+        FacebookDesign fb = new FacebookDesign();
+        return fb.getAbout(fbClient);
+    }
 
-		/** Get all posts of user Example **/
-		TreeMap<String, ArrayList<UPost>> allPosts = fb.getHighlights(fbClient);
+    @RequestMapping(value = "/userInfo", method = RequestMethod.GET)
+    public JSONObject getInformation() {
+        FacebookDesign fb = new FacebookDesign();
+        User me = fb.getAbout(fbClient);
+        JSONObject userObj = new JSONObject();
+        userObj.put("BirthDate", me.getBirthday());
+        userObj.put("Hometown", me.getHometown().getName());
+        userObj.put("Gender", me.getGender());
+        userObj.put("Interested", me.getInterestedIn().get(0));
+        userObj.put("Relationship", me.getRelationshipStatus());
+        return userObj;
+    }
 
-		/** Get common photos of user Example **/
-		List<Photo> photoMoments = getPhotoMoments(allPosts, fbClient);
+    @RequestMapping(value = "/friendPics", method = RequestMethod.GET)
+    public JSONArray getFriends() {
+        FacebookDesign fb = new FacebookDesign();
+        return fb.getFriends(fbClient);
+    }
 
-		if (!allPosts.isEmpty())
-			return new ResponseEntity<>(allPosts, HttpStatus.OK);
-		else
-			return new ResponseEntity<>(
-					"There are no Highlights to display currently",
-					HttpStatus.BAD_REQUEST);
-	}
+    public void publishStory(String story, String emailAddress) {
 
-	public FacebookType publishStory(String story, FacebookClient fbClient) {
+        // to post a story to logged in users wall
+        FacebookType publishMessageResponse = postStory.PostOnWall(fbClient, story);
+        mail.sendEmail(emailAddress,story);
+        //return publishMessageResponse;
 
-		// to post a story to logged in users wall
-		FacebookType publishMessageResponse = postStory.PostOnWall(fbClient,
-				story);
-		System.out.println("Published message ID: "
-				+ publishMessageResponse.getId());
-		return publishMessageResponse;
+    }
+    /*public List<Picture> getProfilePhotos(FacebookClient fbClient) {
+        // to get profile photos of friends of logged in user
+        List<Picture> friendProfilePhotos = friends.getProfilePhotos(fbClient);
 
-	}
+        logger.info(String.format("Found %s profiles",
+                friendProfilePhotos.size()));
+        for (Picture profilePicture : friendProfilePhotos) {
+            System.out.println(profilePicture.getUrl());
+        }
+        return friendProfilePhotos;
+    }*/
 
-	public List<Picture> getProfilePhotos(FacebookClient fbClient) {
-		// to get profile photos of friends of logged in user
-		List<Picture> friendProfilePhotos = friends.getProfilePhotos(fbClient);
+    public ArrayList<String> getPhotoMoments(TreeMap<String, ArrayList<UPost>> allPosts) {
+        if (!allPosts.isEmpty()) {
+            List<UPost> topPosts = fb.getTopPosts(allPosts, fbClient);
+            List<Photo> photoMoments = facebookPhotoFinder.findPhotoMoments(topPosts, fbClient);
+            ArrayList<String> pics = new ArrayList<String>();
+            for (Photo photo : photoMoments) {
+                pics.add(photo.getPicture());
+                System.out.println(photo.getPicture());
+            }
+            return pics;
+        }
+        return new ArrayList<String>();
 
-		logger.info(String.format("Found %s profiles",
-				friendProfilePhotos.size()));
-		for (Picture profilePicture : friendProfilePhotos) {
-			System.out.println(profilePicture.getUrl());
-		}
-		return friendProfilePhotos;
-	}
+    }
 
-	public List<Photo> getPhotoMoments(
-			TreeMap<String, ArrayList<UPost>> allPosts, FacebookClient fbClient) {
-
-		if (!allPosts.isEmpty()) {
-			List<UPost> topPosts = fb.getTopPosts(allPosts, fbClient);
-			List<Photo> photoMoments = facebookPhotoFinder.findPhotoMoments(
-					topPosts, fbClient);
-			logger.info(String.format("Found %s photo moments",
-					photoMoments.size()));
-			for (Photo photo : photoMoments) {
-				System.out.println(photo.getSource());
-			}
-			return photoMoments;
-		}
-		return new ArrayList<Photo>();
-
-	}
-
-	public void getUserPermissions(String accessToken) throws IOException {
-		WebRequestor wr = new DefaultWebRequestor();
-		WebRequestor.Response permissions = wr
-				.executeGet("https://graph.facebook.com/me/permissions?access_token="
-						+ accessToken);
-		logger.debug(permissions.toString());
-	}
-
-	/*---------------------------------Generate User Token --------------------------------------------------*/
-	private FacebookClient.AccessToken getFacebookUserToken(String code,
-			String redirectUrl) throws IOException {
-		String appId = "403024159903643";
-		String appSecretId = "15b0bf950c65802d807eb71ac932820a";
-		WebRequestor wr = new DefaultWebRequestor();
-		WebRequestor.Response accessTokenResponse = wr
-				.executeGet("https://graph.facebook.com/oauth/access_token?client_id="
-						+ appId
-						+ "&redirect_uri="
-						+ redirectUrl
-						+ "&client_secret="
-						+ appSecretId
-						+ "&code="
-						+ code
-						+ "&scope=user_posts%2Cuser_photos%2Cpublish_stream");
-
-		return DefaultFacebookClient.AccessToken
-				.fromQueryString(accessTokenResponse.getBody());
-	}
+    /*---------------------------------Generate User Token --------------------------------------------------*/
+    public FacebookClient.AccessToken getFacebookUserToken(String code, String redirectUrl) throws IOException {
+        String appId = "403024159903643";
+        String appSecretId = "15b0bf950c65802d807eb71ac932820a";
+        WebRequestor wr = new DefaultWebRequestor();
+        WebRequestor.Response accessTokenResponse = wr.executeGet("https://graph.facebook.com/oauth/access_token?client_id=" + appId + "&redirect_uri=" + redirectUrl + "&client_secret=" + appSecretId + "&code=" + code);
+        return DefaultFacebookClient.AccessToken.fromQueryString(accessTokenResponse.getBody());
+    }
 }

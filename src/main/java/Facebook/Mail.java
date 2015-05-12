@@ -31,11 +31,19 @@ public class Mail {
             message.setFrom(new InternetAddress("project273@yahoo.com"));
 
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(strRecepientAddress));
-            message.setSubject("Post Scheduled");
-            message.setText(strMessage);
+            message.setSubject("You Posted On Facebook Wall");
+            StringBuilder str = new StringBuilder();
+            str.append("Hi,") ;
+            str.append("\n\n") ;
+            str.append("You posted the following message on your facebook wall using Facebook Moments App:");
+            str.append("\n\n");
+            str.append(strMessage);
+            str.append("\n\n") ;
+            str.append("Thanks,") ;
+            str.append("\n") ;
+            str.append("Facebook Moments") ;
+            message.setText(str.toString());
             Transport.send(message);
-
-            System.out.println("Email sent..");
 
         } catch (MessagingException e) {
             throw new RuntimeException(e);
