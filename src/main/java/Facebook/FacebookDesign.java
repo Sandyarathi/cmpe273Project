@@ -1,6 +1,7 @@
 package Facebook;
 
 import FacebookUser.UPost;
+import com.mongodb.*;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
@@ -8,14 +9,17 @@ import com.restfb.exception.FacebookGraphException;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
+import java.net.UnknownHostException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import com.restfb.types.User;
-import org.springframework.beans.factory.annotation.Autowired;
 
-    @Autowired
-    PostRepository repo;
+//@Autowired
+    //MongoOperations repo;
+    /*public String[] postClassAttributes = {"userId","postId","postMessage","postMonth","postYear","statusType","story","type","description"
+    ,"likesCount","commentCount","rating","postImageURL"};*/
+    static String strFirstName;
+
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<String, ArrayList<UPost>>();
         ArrayList<UPost> monthPost = new ArrayList<UPost> ();
@@ -29,8 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
         Date date = new Date();
         int flag = 0;
         try {
-            User me = fbClient.fetchObject("me", com.restfb.types.User.class, Parameter.with("fields", "id"));
+            User me = fbClient.fetchObject("me", com.restfb.types.User.class);
             userId = me.getId();
+            strFirstName = me.getFirstName();
+            System.out.println(strFirstName);
             String profilePicture = "https://graph.facebook.com/" + userId + "/picture?width=130&height=130";
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time, picture"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
@@ -110,7 +116,8 @@ import org.springframework.beans.factory.annotation.Autowired;
             while (flag == 0) {
                 if (it.hasNext()) {
                     if (count < 5) {
-                        topPost.add((UPost) it.next());
+                        UPost currentPost = (UPost) it.next();
+                        topPost.add(currentPost);
                         count++;
                         flag = 0;
                     } else {
@@ -121,13 +128,84 @@ import org.springframework.beans.factory.annotation.Autowired;
                     flag = 1;
             }
             highlights.put(key, topPost);
-            repo.save(topPost);
-        }
+            storeInDatabase(topPost);
+       }
         return highlights;
     }
-
-    public User  getAbout(FacebookClient fbClient){
+    public void storeInDatabase(ArrayList<UPost> topPost)
+    {
+        String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
+        MongoClientURI uri = new MongoClientURI(textUri);
+        try {
+            MongoClient client = new MongoClient(uri);
+            DB db = client.getDB("facebook_moments");
+            System.out.println("FirstNAME"+ strFirstName);
+            
+                DBCollection store = db.getCollection(strFirstName);
+                // System.out.println(topPost.size());
+                for (UPost postData : topPost) {
+                    BasicDBObject post = new BasicDBObject();
+                    post.append("UserID", postData.getUserId());
+                    post.append("PostID", postData.getPostId());
+                    post.append("PostMessage", postData.getPostMessage());
+                    post.append("postMonth", postData.getPostMonth());
+                    post.append("postYear", postData.getPostYear());
+                    post.append("statusType", postData.getStatusType());
+                    post.append("story", postData.getStory());
+                    post.append("type", postData.getType());
+                    post.append("description", postData.getDescription());
+                    post.append("likesCount", postData.getLikesCount());
+                    post.append("rating", postData.getRating());
+                    post.append("postImageURL", postData.getPostImage());
+                    store.insert(post);
+                }     
+        }
+        catch(UnknownHostException e)
+        {
+            System.out.println("Could not connected");
+        }
+    }
+    public User getAbout(FacebookClient fbClient){
         User me = fbClient.fetchObject("me", com.restfb.types.User.class);
+        String strFirstName = me.getFirstName();
+        Facebook.User user1 = new Facebook.User();
+        user1.setStrName(strFirstName);
+        //repo.save(user1);
+        System.out.println("FirstName:" + strFirstName);
+        String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
+        MongoClientURI uri = new MongoClientURI(textUri);
+       /* try {
+            MongoClient client = new MongoClient(uri);
+            DB db = client.getDB("facebook_moments");
+            DBCollection store = db.getCollection(strFirstName);
+            if (db.collectionExists(strFirstName)) {
+
+                //BasicDBObject newUser = new BasicDBObject();
+                //newUser.replace("Username",newUser.get("Username"),"Jihirsha");
+                //store.save(newUser);
+                DBObject query = new BasicDBObject("Username", user1.getStrName());
+                DBObject put = new BasicDBObject().append("Username", "Jihirsha");
+                DBObject update = new BasicDBObject("$set", put);
+                store.update(query, update);
+            }
+            else
+             {
+                BasicDBObject postUser = new BasicDBObject();
+                postUser.append("Username", strFirstName);
+                store.insert(postUser);
+
+            }
+        }
+        catch(UnknownHostException e)
+        {
+            System.out.println("Could not connected");
+        }
+        //if(repo == null)
+        {
+            //System.out.println("Null REPO");
+        }
+        //System.out.println(repo.toString());
+        //repo.save(strFirstName);*/
         return me;
     }
 
@@ -139,7 +217,6 @@ import org.springframework.beans.factory.annotation.Autowired;
             {
                 data.put(u.getName().split(" ")[0],u.getPicture().getUrl());
             }
-
             myFriends = fbClient.fetchConnectionPage(myFriends.getNextPageUrl(), User.class);
         } while (myFriends.hasNext() && data.size() <50);
         return data;
@@ -155,8 +232,7 @@ import org.springframework.beans.factory.annotation.Autowired;
             if (topPostsOfMonth.size() > 0)
                 topPosts.add(topPostsOfMonth.get(0));
         }
-
-      return topPosts;
+        return topPosts;
 
     }
 
