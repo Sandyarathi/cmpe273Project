@@ -89,7 +89,7 @@ public class FacebookPhotoFinder {
 		return userPhotos;
 	}
 
-	/*private Set<Photo> getPhotoSet(List<String> friendIDs,
+	private Set<Photo> getPhotoSet(List<String> friendIDs,
 			List<Photo> userPhotos) {
 		Set<Photo> photoMoments = new HashSet<Photo>();
 		for (Photo photo : userPhotos) {
@@ -106,4 +106,4 @@ public class FacebookPhotoFinder {
 
 	}
 
-}*/
+}
