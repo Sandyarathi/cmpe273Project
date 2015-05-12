@@ -1,25 +1,11 @@
 package Facebook;
 
-import FacebookUser.UPost;
-import com.mongodb.*;
-import com.restfb.Connection;
-import com.restfb.FacebookClient;
-import com.restfb.Parameter;
-import com.restfb.exception.FacebookGraphException;
-import com.restfb.types.Post;
-import com.restfb.types.User;
+static String strFirstName;
 
-import java.net.UnknownHostException;
-import java.text.DateFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-    
-    static String strFirstName;
-
+public class FacebookDesign {
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<String, ArrayList<UPost>>();
-        ArrayList<UPost> monthPost = new ArrayList<UPost> ();
+        ArrayList<UPost> monthPost = new ArrayList<UPost>();
         Date oneYearAgo = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 365L);
         String userId, postMonth = "WrongMonth", postYear;
         SimpleDateFormat month = new SimpleDateFormat("MM");
@@ -33,7 +19,7 @@ import java.util.*;
             User me = fbClient.fetchObject("me", com.restfb.types.User.class);
             userId = me.getId();
             strFirstName = me.getFirstName();
-            
+
             String profilePicture = "https://graph.facebook.com/" + userId + "/picture?width=130&height=130";
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time, picture"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
@@ -61,8 +47,7 @@ import java.util.*;
                             Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count.getLikesCount(), count.getCommentsCount());
                             postImageURL = p.getPicture();
-                            if(postImageURL == null)
-                            {
+                            if (postImageURL == null) {
                                 postImageURL = profilePicture;
                             }
                             post.setPostImage(postImageURL);
@@ -73,12 +58,11 @@ import java.util.*;
                             monthPost.add(post);
                             break;
                         case 1:
-                            monthPost = new ArrayList<UPost> ();
+                            monthPost = new ArrayList<UPost>();
                             Post count1 = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post1 = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count1.getLikesCount(), count1.getCommentsCount());
                             postImageURL = p.getPicture();
-                            if(postImageURL == null)
-                            {
+                            if (postImageURL == null) {
                                 postImageURL = profilePicture;
                             }
                             post1.setPostImage(postImageURL);
@@ -126,40 +110,37 @@ import java.util.*;
             }
             highlights.put(key, topPost);
             storeInDatabase(topPost);
-       }
+        }
         return highlights;
     }
-    public void storeInDatabase(ArrayList<UPost> topPost)
-    {
+
+    public void storeInDatabase(ArrayList<UPost> topPost) {
         String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
         MongoClientURI uri = new MongoClientURI(textUri);
         try {
             MongoClient client = new MongoClient(uri);
             DB db = client.getDB("facebook_moments");
-            if(db.collectionExists(strFirstName))
-            {
+            if (db.collectionExists(strFirstName)) {
                 DBCollection storeUpdate = db.getCollection(strFirstName);
-                for(UPost newPost:topPost)
-                {
-                    BasicDBObject oldPostData = new BasicDBObject("UserID",newPost.getUserId());
+                for (UPost newPost : topPost) {
+                    BasicDBObject oldPostData = new BasicDBObject("UserID", newPost.getUserId());
                     BasicDBObject newPostData = new BasicDBObject()
-                            .append("UserID",newPost.getUserId())
-                            .append("PostID",newPost.getPostId())
-                            .append("PostMessage",newPost.getPostMessage())
-                            .append("PostMonth",newPost.getPostMonth())
-                            .append("PostYear",newPost.getPostYear())
-                            .append("statusType",newPost.getStatusType())
-                            .append("story",newPost.getStory())
-                            .append("type",newPost.getType())
-                            .append("description",newPost.getDescription())
-                            .append("likescount",newPost.getLikesCount())
-                            .append("rating",newPost.getRating())
-                            .append("postImageURL",newPost.getPostImage());
+                            .append("UserID", newPost.getUserId())
+                            .append("PostID", newPost.getPostId())
+                            .append("PostMessage", newPost.getPostMessage())
+                            .append("PostMonth", newPost.getPostMonth())
+                            .append("PostYear", newPost.getPostYear())
+                            .append("statusType", newPost.getStatusType())
+                            .append("story", newPost.getStory())
+                            .append("type", newPost.getType())
+                            .append("description", newPost.getDescription())
+                            .append("likescount", newPost.getLikesCount())
+                            .append("rating", newPost.getRating())
+                            .append("postImageURL", newPost.getPostImage());
                     DBObject update = new BasicDBObject("$set", newPostData);
                     storeUpdate.updateMulti(oldPostData, update);
                 }
-            }
-            else {
+            } else {
 
                 DBCollection store = db.getCollection(strFirstName);
                 // System.out.println(topPost.size());
@@ -180,27 +161,25 @@ import java.util.*;
                     store.insert(post);
                 }
             }
-        }
-        catch(UnknownHostException e)
-        {
+        } catch (UnknownHostException e) {
             System.out.println("Could not connected");
         }
     }
-    public User getAbout(FacebookClient fbClient){
+
+    public User getAbout(FacebookClient fbClient) {
         User me = fbClient.fetchObject("me", com.restfb.types.User.class);
         return me;
     }
 
-    public HashMap <String,String> getFriends(FacebookClient fbClient){
-        HashMap <String,String> data = new HashMap <String,String>();
+    public HashMap<String, String> getFriends(FacebookClient fbClient) {
+        HashMap<String, String> data = new HashMap<String, String>();
         Connection<User> myFriends = fbClient.fetchConnection("me/taggable_friends", User.class, Parameter.with("fields", "id, name,picture"));
-        do{
-            for (User u: myFriends.getData())
-            {
-                data.put(u.getName().split(" ")[0],u.getPicture().getUrl());
+        do {
+            for (User u : myFriends.getData()) {
+                data.put(u.getName().split(" ")[0], u.getPicture().getUrl());
             }
             myFriends = fbClient.fetchConnectionPage(myFriends.getNextPageUrl(), User.class);
-        } while (myFriends.hasNext() && data.size() <50);
+        } while (myFriends.hasNext() && data.size() < 50);
         return data;
     }
 
