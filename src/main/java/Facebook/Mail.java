@@ -7,7 +7,7 @@ import java.util.Properties;
 
 public class Mail {
 
-    public void sendEmail()
+    public void sendEmail(String strRecepientAddress,String strMessage)
     {
         final String username = "project273@yahoo.com";
         final String password = "sjsuspring15";
@@ -30,9 +30,9 @@ public class Mail {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress("project273@yahoo.com"));
 
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress("jihirsha@yahoo.com"));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(strRecepientAddress));
             message.setSubject("Post Scheduled");
-            message.setText("Email Checking);
+            message.setText(strMessage);
             Transport.send(message);
 
             System.out.println("Email sent..");
