@@ -1,25 +1,24 @@
 package Facebook;
 
 import FacebookUser.UPost;
-import com.restfb.*;
+import com.restfb.Connection;
+import com.restfb.FacebookClient;
+import com.restfb.Parameter;
 import com.restfb.exception.FacebookGraphException;
 import com.restfb.types.Post;
 import com.restfb.types.User;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.net.URL;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import com.restfb.types.User;
+import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * Class calls functions to fetch User's FacebookDesign Highlights
-
- */
-    
+    @Autowired
+    PostRepository repo;
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
-        TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
-        ArrayList<UPost> monthPost = new ArrayList<>();
+        TreeMap<String, ArrayList<UPost>> posts = new TreeMap<String, ArrayList<UPost>>();
+        ArrayList<UPost> monthPost = new ArrayList<UPost> ();
         Date oneYearAgo = new Date(System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 365L);
         String userId, postMonth = "WrongMonth", postYear;
         SimpleDateFormat month = new SimpleDateFormat("MM");
@@ -31,12 +30,10 @@ import java.util.*;
         int flag = 0;
         try {
             User me = fbClient.fetchObject("me", com.restfb.types.User.class, Parameter.with("fields", "id"));
-            
             userId = me.getId();
-            URL profilePicture = new URL("https://graph.facebook.com/" + userId + "/picture?type=large"); //getting profile picture
-            
+            String profilePicture = "https://graph.facebook.com/" + userId + "/picture?width=130&height=130";
             Date currentDate = dateFormat.parse(dateFormat.format(date));
-            Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
+            Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time, picture"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
             do {
                 for (Post p : userPost.getData()) {
                     int numericMonth = Integer.parseInt(month.format(p.getCreatedTime()));
@@ -55,17 +52,17 @@ import java.util.*;
                         flag = 0;
                     }
                     // System.out.println("Current Month: " + postMonth + " & Year: " + postYear + " & Flag: " + flag);
+                    String postImageURL = null;
                     switch (flag) {
                         case 0:
-                            Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true),picture"));
+                            Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count.getLikesCount(), count.getCommentsCount());
-                            String postImageURL = p.getPicture();
+                            postImageURL = p.getPicture();
                             if(postImageURL == null)
                             {
-                                URL postImage = new URL("https://graph.facebook.com/" + userId + "/picture");
-                                postImageURL = postImage.getFile();
+                                postImageURL = profilePicture;
                             }
-                            post.setPostImage(p.getPicture());//get picture related to post
+                            post.setPostImage(postImageURL);
                             post.setStory(p.getStory());
                             post.setType(p.getType());
                             post.setDescription(p.getDescription());
@@ -73,16 +70,15 @@ import java.util.*;
                             monthPost.add(post);
                             break;
                         case 1:
-                            monthPost = new ArrayList<>();
+                            monthPost = new ArrayList<UPost> ();
                             Post count1 = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
                             UPost post1 = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count1.getLikesCount(), count1.getCommentsCount());
-                            String postImageURL1 = p.getPicture();
-                            if(postImageURL1 == null)
+                            postImageURL = p.getPicture();
+                            if(postImageURL == null)
                             {
-                                URL postImage = new URL("https://graph.facebook.com/" + userId + "/picture");
-                                postImageURL1 = postImage.getFile();
+                                postImageURL = profilePicture;
                             }
-                            post1.setPostImage(p.getPicture()); //get picture related to post
+                            post1.setPostImage(postImageURL);
                             post1.setStory(p.getStory());
                             post1.setType(p.getType());
                             post1.setDescription(p.getDescription());
@@ -104,11 +100,11 @@ import java.util.*;
     }
 
     public TreeMap<String, ArrayList<UPost>> getHighlights(FacebookClient fbClient) {
-        TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<>();
+        TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<String, ArrayList<UPost>>();
         for (Map.Entry<String, ArrayList<UPost>> entry : getAllPost(fbClient).entrySet()) {
             String key = entry.getKey();
             ArrayList<UPost> value = entry.getValue();
-            ArrayList<UPost> topPost = new ArrayList<>();
+            ArrayList<UPost> topPost = new ArrayList<UPost>();
             Iterator it = value.iterator();
             int flag = 0, count = 0;
             while (flag == 0) {
@@ -125,9 +121,43 @@ import java.util.*;
                     flag = 1;
             }
             highlights.put(key, topPost);
+            repo.save(topPost);
         }
         return highlights;
     }
 
-}
+    public User  getAbout(FacebookClient fbClient){
+        User me = fbClient.fetchObject("me", com.restfb.types.User.class);
+        return me;
+    }
 
+    public HashMap <String,String> getFriends(FacebookClient fbClient){
+        HashMap <String,String> data = new HashMap <String,String>();
+        Connection<User> myFriends = fbClient.fetchConnection("me/taggable_friends", User.class, Parameter.with("fields", "id, name,picture"));
+        do{
+            for (User u: myFriends.getData())
+            {
+                data.put(u.getName().split(" ")[0],u.getPicture().getUrl());
+            }
+
+            myFriends = fbClient.fetchConnectionPage(myFriends.getNextPageUrl(), User.class);
+        } while (myFriends.hasNext() && data.size() <50);
+        return data;
+    }
+
+    public List<UPost> getTopPosts(TreeMap<String, ArrayList<UPost>> allPosts,
+                                   FacebookClient fbClient) {
+        List<UPost> topPosts = new ArrayList<UPost>();
+        Set<String> keySet = allPosts.keySet();
+
+        for (String key : keySet) {
+            List<UPost> topPostsOfMonth = allPosts.get(key);
+            if (topPostsOfMonth.size() > 0)
+                topPosts.add(topPostsOfMonth.get(0));
+        }
+
+      return topPosts;
+
+    }
+
+}
