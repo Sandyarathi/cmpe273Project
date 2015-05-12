@@ -2,11 +2,14 @@ package FacebookUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class UPost implements Comparable<UPost>
-{
+/**
+ * Class holds Facebook data
+ * Created by Nakul Sharma on 18-04-2015.
+ */
+public class UPost implements Comparable<UPost> {
 
     private String userId;
-    private String postId;
+    public String postId;
 
     private String postMessage = null;   // message field in Fb JSON
     private String postMonth; // created_time field in Fb JSON
@@ -18,7 +21,7 @@ public class UPost implements Comparable<UPost>
     private long likesCount; // likes --> data --> id in Fb JSON
     private long commentCount; // comments field in Fb JSON
     private long rating;
-    private String postImageURL = null; // picture related to post
+    private String postImage = null;
 
     public UPost(String userId, String postId, String postMessage, String postMonth, String statusType, long likesCount, long commentCount) {
         this.setUserId(userId);
@@ -40,16 +43,25 @@ public class UPost implements Comparable<UPost>
         this.userId = userId;
     }
 
-//    @JsonIgnore
+    //    @JsonIgnore
     public String getPostId() {
         return postId;
     }
+
 
     public void setPostId(String postId) {
         this.postId = postId;
     }
 
-    @JsonIgnore
+    public String getPostImage() {
+        return postImage;
+    }
+
+    public void setPostImage(String url) {
+        this.postImage = url;
+    }
+
+
     public String getPostMessage() {
         return postMessage;
     }
@@ -85,7 +97,6 @@ public class UPost implements Comparable<UPost>
         this.commentCount = commentCount;
     }
 
-    @JsonIgnore
     public String getStatusType() {
         return statusType;
     }
@@ -94,7 +105,6 @@ public class UPost implements Comparable<UPost>
         this.statusType = statusType;
     }
 
-    @JsonIgnore
     public String getStory() {
         return story;
     }
@@ -103,7 +113,7 @@ public class UPost implements Comparable<UPost>
         this.story = story;
     }
 
-    @JsonIgnore
+    //    @JsonIgnore
     public String getType() {
         return type;
     }
@@ -116,6 +126,7 @@ public class UPost implements Comparable<UPost>
         return description;
     }
 
+    //      @JsonIgnore
     public void setDescription(String description) {
         this.description = description;
     }
