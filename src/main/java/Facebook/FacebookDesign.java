@@ -16,13 +16,6 @@ import java.util.*;
  * Class calls functions to fetch User's FacebookDesign Highlights
 
  */
-public class FacebookDesign {
-
-  /*  private FacebookClient fbClient;
-    FacebookDesign(FacebookClient fbClient){
-        this.fbClient=fbClient;
-    }
-*/
     
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<>();
@@ -64,7 +57,7 @@ public class FacebookDesign {
                     // System.out.println("Current Month: " + postMonth + " & Year: " + postYear + " & Flag: " + flag);
                     switch (flag) {
                         case 0:
-                            Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true)"));
+                            Post count = fbClient.fetchObject(p.getId(), Post.class, Parameter.with("fields", "likes.summary(true),comments.summary(true),picture"));
                             UPost post = new UPost(userId, p.getId(), p.getMessage(), postMonth, p.getStatusType(), count.getLikesCount(), count.getCommentsCount());
                             String postImageURL = p.getPicture();
                             if(postImageURL == null)
@@ -72,7 +65,7 @@ public class FacebookDesign {
                                 URL postImage = new URL("https://graph.facebook.com/" + userId + "/picture");
                                 postImageURL = postImage.getFile();
                             }
-                            post.setPostImage(p.getPicture());
+                            post.setPostImage(p.getPicture());//get picture related to post
                             post.setStory(p.getStory());
                             post.setType(p.getType());
                             post.setDescription(p.getDescription());
@@ -89,7 +82,7 @@ public class FacebookDesign {
                                 URL postImage = new URL("https://graph.facebook.com/" + userId + "/picture");
                                 postImageURL1 = postImage.getFile();
                             }
-                            post1.setPostImage(p.getPicture());
+                            post1.setPostImage(p.getPicture()); //get picture related to post
                             post1.setStory(p.getStory());
                             post1.setType(p.getType());
                             post1.setDescription(p.getDescription());

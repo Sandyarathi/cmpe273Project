@@ -2,11 +2,6 @@ package FacebookUser;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**
- * Class holds Facebook data
- * Created by Nakul Sharma on 04-20-2015
- * Updated by Nakul Sharma on 05-10-2015
- */
 public class UPost implements Comparable<UPost>
 {
 
@@ -23,6 +18,7 @@ public class UPost implements Comparable<UPost>
     private long likesCount; // likes --> data --> id in Fb JSON
     private long commentCount; // comments field in Fb JSON
     private long rating;
+    private String postImageURL = null; // picture related to post
 
     public UPost(String userId, String postId, String postMessage, String postMonth, String statusType, long likesCount, long commentCount) {
         this.setUserId(userId);
