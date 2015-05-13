@@ -62,14 +62,10 @@ public class FController {
     }*/
 
 
-    public TreeMap<String, ArrayList<UPost>> getResults() {
+    @RequestMapping(value = "/highlights", method = RequestMethod.GET)
+    public JSONObject getResult() {
         FacebookDesign fb = new FacebookDesign();
         return fb.getHighlights(fbClient);
-    }
-    @RequestMapping(value = "/highlights", method = RequestMethod.GET)
-    public JSONArray getResult() {
-        FacebookDesign fb = new FacebookDesign();
-        return fb.getHighlight(fbClient);
     }
 
     @RequestMapping(value = "/userName", method = RequestMethod.GET)
@@ -115,8 +111,8 @@ public class FController {
     public void publishStory(String story, String emailAddress) {
 
         // to post a story to logged in users wall
-      //  FacebookType publishMessageResponse = postStory.PostOnWall(fbClient, story);
-      //  mail.sendEmail(emailAddress,story);
+        //FacebookType publishMessageResponse = postStory.PostOnWall(fbClient, story);
+        //mail.sendEmail(emailAddress,story);
         //return publishMessageResponse;
 
     }
@@ -132,20 +128,6 @@ public class FController {
         return friendProfilePhotos;
     }*/
 
-    public ArrayList<String> getPhotoMoments(TreeMap<String, ArrayList<UPost>> allPosts) {
-        if (!allPosts.isEmpty()) {
-            List<UPost> topPosts = fb.getTopPosts(allPosts, fbClient);
-            List<Photo> photoMoments = facebookPhotoFinder.findPhotoMoments(topPosts, fbClient);
-            ArrayList<String> pics = new ArrayList<String>();
-            for (Photo photo : photoMoments) {
-                pics.add(photo.getPicture());
-                System.out.println(photo.getPicture());
-            }
-            return pics;
-        }
-        return new ArrayList<String>();
-
-    }
 
     /*---------------------------------Generate User Token --------------------------------------------------*/
     public FacebookClient.AccessToken getFacebookUserToken(String code, String redirectUrl) throws IOException {

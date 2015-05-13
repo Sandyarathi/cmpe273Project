@@ -128,7 +128,7 @@
                         <div class="row">
 
                             <!-- main col left -->
-                            <div class="col-sm-5" style="width: 21%" >
+                            <div class="col-sm-5" style="width: 19%" >
 
                                 <div class="panel panel-default">
                                     <div class="panel-thumbnail"><img id="profile-pic" class="img-responsive"></div>
@@ -178,50 +178,16 @@
 
                                 <div class="panel panel-default">
                                     <div class="panel-heading"> <h4>Friends</h4></div>
-                                    <div id="manualCsoCodes" class="panel-body" style="height:205px;overflow: auto" >
+                                    <div id="friend-pics" class="panel-body" style="height:205px;overflow: auto" >
 
 
                                     </div>
                                 </div>
+
                                 <div class="panel panel-default">
                                     <div class="panel-heading"> <h4>Photos</h4></div>
-                                    <div class="panel-body" style="height:205px;overflow: auto" >
-                                        <table>
-                                            <%
-                                                TreeMap<String, ArrayList<UPost>> hash = fb.getResults();
-                                                ArrayList<String> pics = fb.getPhotoMoments(hash);
-                                                int j =0;
-                                                while (j<pics.size()) {
-                                            %>
+                                    <div id="photo" class="panel-body" style="height:205px;overflow: auto" >
 
-                                            <tr>
-                                                <td><img src="<%=pics.get(j)%>"/> <br/>
-                                                </td>
-                                                <%
-                                                    j= j + 1;
-                                                    if (j<pics.size()) {
-                                                %>
-                                                <td><img src="<%=pics.get(j)%>"/> <br/>
-                                                </td>
-                                                <%
-                                                    }
-                                                    j= j + 1;
-                                                    if (j<pics.size()) {
-                                                %>
-                                                <td><img src="<%=pics.get(j)%>"/> <br/>
-                                                </td>
-                                                <%
-                                                        j++;
-                                                    }
-                                                %>
-
-                                            </tr>
-
-                                            <%
-
-                                                }
-                                            %>
-                                        </table>
 
                                     </div>
                                 </div>
@@ -242,76 +208,12 @@
                                     </form>
                                 </div>
                                 <div class="panel panel-default">
-                                    <div class="panel-heading"><h4>Top Get Moments</h4></div>
+                                    <div class="panel-heading"><h4>Top Moments</h4></div>
                                     <div id="moments" class="panel-body">
 
 
                                     </div>
                                 </div>
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h4>Top Moments</h4></div>
-                                    <div class="panel-body">
-                                        <table>
-                                            <%
-
-
-                                                int i =0;
-                                                for(Map.Entry<String, ArrayList<UPost>> entry : hash.entrySet()){
-
-                                            %>
-                                            <tr>
-
-                                                <%
-                                                    DateFormatSymbols dfs = new DateFormatSymbols();
-                                                    String[] alphabeticMonth = dfs.getMonths();
-                                                    String str[] = entry.getKey().split("-");
-                                                     int numericMonth = Integer.parseInt(str[1]);
-                                                    if (numericMonth >= 1 && numericMonth <= 12) {
-                                                        str[1]= alphabeticMonth[numericMonth - 1];
-                                                    }
-                                                %>
-                                                <td style="font-size: small;width: 16%" ><%=str[1]%> <%=str[0]%><a  id="testLink"  href="#"  onclick="myFunction(<%=i%>)">-</a></td>
-                                                <td style="width: 100%" ><hr></td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="2" >
-                                                    <div id ="div<%=i%>">
-                                                        <table>
-
-
-
-                                                        <%
-                                                            i++;
-                                                            for(UPost post : entry.getValue()){
-
-                                                        %>
-                                                            <tr>
-                                                                <td><img src="<%=post.getPostImage()%>"/> </td>
-                                                                <td> <span style="font-size: smaller"><i><%=post.getPostMessage()%></i></span> <br/></td>
-                                                            </tr>
-
-                                                        <%
-                                                            }
-                                                        %>
-                                                        </table>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <%
-                                                }
-                                            %>
-                                        </table>
-
-                                        <div class="clearfix"></div>
-                                        <hr>
-
-                                    </div>
-                                </div>
-
-
-
-
-
 
                             </div>
                         </div><!--/row-->

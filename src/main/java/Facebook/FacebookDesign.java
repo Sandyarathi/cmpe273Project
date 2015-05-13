@@ -1,19 +1,19 @@
 package Facebook;
 
 import FacebookUser.UPost;
-import com.mongodb.*;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.exception.FacebookGraphException;
+import com.restfb.types.Photo;
 import com.restfb.types.Post;
 import com.restfb.types.User;
 
-import java.net.UnknownHostException;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import com.restfb.types.User;
+import facebookFriendPhotos.FacebookPhotoFinder;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FacebookDesign {
 
-    static String username;
-    static NavigableMap<String,ArrayList<UPost>> sortedHighlights;
-
+    /*  private FacebookClient fbClient;
+      FacebookDesign(FacebookClient fbClient){
+          this.fbClient=fbClient;
+      }
+  */
+    @Autowired
+    PostRepository repo;
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<String, ArrayList<UPost>>();
         ArrayList<UPost> monthPost = new ArrayList<UPost> ();
@@ -43,7 +47,6 @@ public class FacebookDesign {
         try {
             User me = fbClient.fetchObject("me", com.restfb.types.User.class, Parameter.with("fields", "id"));
             userId = me.getId();
-            username=me.getFirstName().toLowerCase() +"_"+me.getLastName().toLowerCase();
             String profilePicture = "https://graph.facebook.com/" + userId + "/picture?width=130&height=130";
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time, picture"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
@@ -138,37 +141,10 @@ public class FacebookDesign {
         return posts;
     }
 
-    public TreeMap<String, ArrayList<UPost>> getHighlights(FacebookClient fbClient) {
-        TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<String, ArrayList<UPost> >();
-        for (Map.Entry<String, ArrayList<UPost>> entry : getAllPost(fbClient).entrySet()) {
-            String key = entry.getKey();
-            ArrayList<UPost> value = entry.getValue();
-            ArrayList<UPost> topPost = new ArrayList<UPost>();
-            Iterator it = value.iterator();
-            int flag = 0, count = 0;
-            while (flag == 0) {
-                if (it.hasNext()) {
-                    if (count < 5) {
-                        topPost.add((UPost) it.next());
-                        count++;
-                        flag = 0;
-                    } else {
-                        flag = 1;
-                        count = 1;
-                    }
-                } else
-                    flag = 1;
-            }
-            highlights.put(key, topPost);
-            //repo.save(topPost);
-        }
-        return highlights;
-    }
-
-    public JSONArray getHighlight(FacebookClient fbClient) {
+    public JSONObject getHighlights(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<String, ArrayList<UPost>>();
-        JSONObject jsonPost = new JSONObject();
-        JSONArray jsonHighlights = new JSONArray();
+        JSONObject picObj = new JSONObject();
+        JSONArray friends = new JSONArray();
         for (Map.Entry<String, ArrayList<UPost>> entry : getAllPost(fbClient).entrySet()) {
             String key = entry.getKey();
             ArrayList<UPost> value = entry.getValue();
@@ -189,15 +165,24 @@ public class FacebookDesign {
                     flag = 1;
             }
             highlights.put(key, topPost);
-            jsonPost = new JSONObject();
-            jsonPost.put("Month", key);
-            jsonPost.put("Post", topPost);
-            jsonHighlights.add(jsonPost);
-            storeInDatabase(topPost);
+            picObj = new JSONObject();
+            DateFormatSymbols dfs = new DateFormatSymbols();
+            String[] alphabeticMonth = dfs.getMonths();
+            String str[] = entry.getKey().split("-");
+            int numericMonth = Integer.parseInt(str[1]);
+            if (numericMonth >= 1 && numericMonth <= 12) {
+                str[1]= alphabeticMonth[numericMonth - 1];
+            }
+            picObj.put("Month", str[1] + " " + str[0]);
+            picObj.put("Post", topPost);
+            friends.add(picObj);
             //repo.save(topPost);
         }
-        sortedHighlights = highlights.descendingMap();
-        return jsonHighlights;
+        ArrayList<String> pics = getPhotoMoments(highlights,fbClient);
+        picObj = new JSONObject();
+        picObj.put("Posts", friends);
+        picObj.put("Pics", pics);
+        return picObj;
     }
 
     public User  getAbout(FacebookClient fbClient){
@@ -241,56 +226,20 @@ public class FacebookDesign {
 
     }
 
-    public void storeInDatabase(ArrayList<UPost> topPost) {
-        String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
-        MongoClientURI uri = new MongoClientURI(textUri);
-        try {
-            MongoClient client = new MongoClient(uri);
-            DB db = client.getDB("facebook_moments");
-            if (db.collectionExists(username)) {
-                DBCollection storeUpdate = db.getCollection(username);
-                for (UPost newPost : topPost) {
-                    BasicDBObject oldPostData = new BasicDBObject("UserID", newPost.getUserId());
-                    BasicDBObject newPostData = new BasicDBObject()
-                            .append("UserID", newPost.getUserId())
-                            .append("PostID", newPost.getPostId())
-                            .append("PostMessage", newPost.getPostMessage())
-                            .append("PostMonth", newPost.getPostMonth())
-                            .append("PostYear", newPost.getPostYear())
-                            .append("statusType", newPost.getStatusType())
-                            .append("story", newPost.getStory())
-                            .append("type", newPost.getType())
-                            .append("description", newPost.getDescription())
-                            .append("likescount", newPost.getLikesCount())
-                            .append("rating", newPost.getRating())
-                            .append("postImageURL", newPost.getPostImage());
-                    DBObject update = new BasicDBObject("$set", newPostData);
-                    storeUpdate.updateMulti(oldPostData, update);
-                }
-            } else {
-
-                DBCollection store = db.getCollection(username);
-
-                for (UPost postData : topPost) {
-                    BasicDBObject post = new BasicDBObject();
-                    post.append("UserID", postData.getUserId());
-                    post.append("PostID", postData.getPostId());
-                    post.append("PostMessage", postData.getPostMessage());
-                    post.append("postMonth", postData.getPostMonth());
-                    post.append("postYear", postData.getPostYear());
-                    post.append("statusType", postData.getStatusType());
-                    post.append("story", postData.getStory());
-                    post.append("type", postData.getType());
-                    post.append("description", postData.getDescription());
-                    post.append("likesCount", postData.getLikesCount());
-                    post.append("rating", postData.getRating());
-                    post.append("postImageURL", postData.getPostImage());
-                    store.insert(post);
-                }
+    public ArrayList<String> getPhotoMoments(TreeMap<String, ArrayList<UPost>> allPosts, FacebookClient fbClient) {
+        FacebookPhotoFinder facebookPhotoFinder = new FacebookPhotoFinder();
+        if (!allPosts.isEmpty()) {
+            List<UPost> topPosts = getTopPosts(allPosts, fbClient);
+            List<Photo> photoMoments = facebookPhotoFinder.findPhotoMoments(topPosts, fbClient);
+            ArrayList<String> pics = new ArrayList<String>();
+            for (Photo photo : photoMoments) {
+                pics.add(photo.getPicture());
+                //System.out.println(photo.getPicture());
             }
-        } catch (UnknownHostException e) {
-            System.out.println("could not connect to database... unknown host exception thrown");
+            return pics;
+
         }
+        return new ArrayList<String>();
     }
 
 }
