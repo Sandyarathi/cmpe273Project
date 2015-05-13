@@ -1,39 +1,27 @@
 package Facebook;
 
-        import FacebookUser.UPost;
-        import com.restfb.DefaultFacebookClient;
-        import com.restfb.DefaultWebRequestor;
-        import com.restfb.FacebookClient;
-        import com.restfb.WebRequestor;
-        import com.restfb.json.JsonArray;
-        import org.apache.log4j.Logger;
-        import org.springframework.http.HttpStatus;
-        import org.springframework.http.ResponseEntity;
-        import org.springframework.web.bind.annotation.RequestMapping;
-        import org.springframework.web.bind.annotation.RequestMethod;
-        import org.springframework.web.bind.annotation.RequestParam;
-        import org.springframework.web.bind.annotation.RestController;
+import com.restfb.DefaultFacebookClient;
+import com.restfb.DefaultWebRequestor;
+import com.restfb.FacebookClient;
+import com.restfb.WebRequestor;
+import com.restfb.types.FacebookType;
+import com.restfb.types.User;
+import facebookFriendPhotos.FacebookPhotoFinder;
+import facebookFriendProfiles.FriendProfiles;
+import facebookPostStory.PostStory;
+import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-        import java.io.IOException;
-        import java.util.ArrayList;
-        import java.util.HashMap;
-        import java.util.TreeMap;
-        import com.restfb.types.User;
-        import com.restfb.types.FacebookType;
-        import com.restfb.types.Photo;
-        import com.restfb.types.User.Picture;
+import java.io.IOException;
 
-        import facebookFriendPhotos.FacebookPhotoFinder;
-        import facebookFriendProfiles.FriendProfiles;
-        import facebookPostStory.PostStory;
-        import  java.util.Map;
-        import org.json.simple.JSONObject;
-        import org.json.simple.JSONArray;
-import java.util.List;
 @RestController
 public class FController {
     private static final Logger logger = Logger.getLogger(FController.class);
-    public static String redirectUrl   = "http://localhost:8080/welcome.jsp";
+    public static String redirectUrl = "http://localhost:8080/welcome.jsp";
     public static FacebookClient fbClient;
     public static FacebookClient.AccessToken token;
     FacebookPhotoFinder facebookPhotoFinder = new FacebookPhotoFinder();
@@ -72,7 +60,7 @@ public class FController {
     public String getMyData() {
         FacebookDesign fb = new FacebookDesign();
         User me = fb.getAbout(fbClient);
-        String name =   me.getFirstName() + " " +   me.getLastName();
+        String name = me.getFirstName() + " " + me.getLastName();
         return name;
     }
 
@@ -112,7 +100,7 @@ public class FController {
 
         // to post a story to logged in users wall
         FacebookType publishMessageResponse = postStory.PostOnWall(fbClient, story);
-        mail.sendEmail(emailAddress,story);
+        mail.sendEmail(emailAddress, story);
         //return publishMessageResponse;
 
     }
