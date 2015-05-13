@@ -1,0 +1,30 @@
+ <!--modals-->
+	<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="myModalLabel">Sign In</h4>
+				</div>
+
+				<div class="modal-body">
+					<form method="POST" action="http://bbarters.com/login" accept-charset="UTF-8" id="loginForm" class="form-horizontal"><input name="_token" type="hidden" value="eBVzSj8KcYKNgIc1gacMHLw0djcWMRGhcJius65f">
+                    <fieldset>
+						<div class="form-group">
+							<label class="col-lg-3 control-label"></label>
+							<div class="col-lg-5">
+
+                                <a class="btn btn-block btn-social btn-facebook" href='http://localhost:8080/fbauth'>
+                                    <i class="fa fa-facebook"></i>
+                                    Sign in with Facebook
+                                    </fieldset>
+                                </a>
+                                
+                         </div>
+                                
+                     </div>
+               
+              </div>
+            </div>
+          </div>    
