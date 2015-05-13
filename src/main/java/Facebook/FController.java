@@ -111,8 +111,8 @@ public class FController {
     public void publishStory(String story, String emailAddress) {
 
         // to post a story to logged in users wall
-        //FacebookType publishMessageResponse = postStory.PostOnWall(fbClient, story);
-        //mail.sendEmail(emailAddress,story);
+        FacebookType publishMessageResponse = postStory.PostOnWall(fbClient, story);
+        mail.sendEmail(emailAddress,story);
         //return publishMessageResponse;
 
     }

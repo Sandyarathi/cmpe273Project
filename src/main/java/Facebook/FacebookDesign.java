@@ -12,10 +12,12 @@ import com.restfb.types.User;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import com.mongodb.*;
 import com.restfb.types.User;
 import facebookFriendPhotos.FacebookPhotoFinder;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
+import java.net.UnknownHostException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -29,8 +31,7 @@ public class FacebookDesign {
           this.fbClient=fbClient;
       }
   */
-    @Autowired
-    PostRepository repo;
+    static String strFirstName;
     protected TreeMap<String, ArrayList<UPost>> getAllPost(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> posts = new TreeMap<String, ArrayList<UPost>>();
         ArrayList<UPost> monthPost = new ArrayList<UPost> ();
@@ -45,8 +46,9 @@ public class FacebookDesign {
         String message;
         int flag = 0;
         try {
-            User me = fbClient.fetchObject("me", com.restfb.types.User.class, Parameter.with("fields", "id"));
+            User me = fbClient.fetchObject("me", com.restfb.types.User.class);
             userId = me.getId();
+            strFirstName = me.getFirstName();
             String profilePicture = "https://graph.facebook.com/" + userId + "/picture?width=130&height=130";
             Date currentDate = dateFormat.parse(dateFormat.format(date));
             Connection<Post> userPost = fbClient.fetchConnection("me/posts", Post.class, Parameter.with("fields", "id,message,description,status_type,type, story, created_time, picture"), Parameter.with("until", "yesterday"), Parameter.with("since", oneYearAgo));
@@ -143,8 +145,10 @@ public class FacebookDesign {
 
     public JSONObject getHighlights(FacebookClient fbClient) {
         TreeMap<String, ArrayList<UPost>> highlights = new TreeMap<String, ArrayList<UPost>>();
+        NavigableMap<String,ArrayList<UPost>> sortedHighlights;
         JSONObject picObj = new JSONObject();
         JSONArray friends = new JSONArray();
+        ArrayList<UPost> topPosts = new ArrayList<UPost>();
         for (Map.Entry<String, ArrayList<UPost>> entry : getAllPost(fbClient).entrySet()) {
             String key = entry.getKey();
             ArrayList<UPost> value = entry.getValue();
@@ -165,18 +169,24 @@ public class FacebookDesign {
                     flag = 1;
             }
             highlights.put(key, topPost);
+            topPosts.addAll(topPost);
+            //repo.save(topPost);
+        }
+        storeInDatabase(topPosts);
+        sortedHighlights =  highlights.descendingMap();
+        for(Map.Entry entry: sortedHighlights.entrySet())
+        {
             picObj = new JSONObject();
             DateFormatSymbols dfs = new DateFormatSymbols();
             String[] alphabeticMonth = dfs.getMonths();
-            String str[] = entry.getKey().split("-");
+            String str[] = entry.getKey().toString().split("-");
             int numericMonth = Integer.parseInt(str[1]);
             if (numericMonth >= 1 && numericMonth <= 12) {
                 str[1]= alphabeticMonth[numericMonth - 1];
             }
             picObj.put("Month", str[1] + " " + str[0]);
-            picObj.put("Post", topPost);
+            picObj.put("Post", entry.getValue());
             friends.add(picObj);
-            //repo.save(topPost);
         }
         ArrayList<String> pics = getPhotoMoments(highlights,fbClient);
         picObj = new JSONObject();
@@ -184,6 +194,65 @@ public class FacebookDesign {
         picObj.put("Pics", pics);
         return picObj;
     }
+
+    public void storeInDatabase(ArrayList<UPost> topPost)
+    {
+        String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
+        MongoClientURI uri = new MongoClientURI(textUri);
+        try {
+            MongoClient client = new MongoClient(uri);
+            DB db = client.getDB("facebook_moments");
+            if(db.collectionExists(strFirstName))
+            {
+                DBCollection storeUpdate = db.getCollection(strFirstName);
+                for(UPost newPost:topPost)
+                {
+                    BasicDBObject oldPostData = new BasicDBObject("UserID",newPost.getUserId());
+                    BasicDBObject newPostData = new BasicDBObject()
+                            .append("UserID",newPost.getUserId())
+                            .append("PostID",newPost.getPostId())
+                            .append("PostMessage",newPost.getPostMessage())
+                            .append("PostMonth",newPost.getPostMonth())
+                            .append("PostYear",newPost.getPostYear())
+                            .append("statusType",newPost.getStatusType())
+                            .append("story",newPost.getStory())
+                            .append("type",newPost.getType())
+                            .append("description",newPost.getDescription())
+                            .append("likescount",newPost.getLikesCount())
+                            .append("rating",newPost.getRating())
+                            .append("postImageURL",newPost.getPostImage());
+                    DBObject update = new BasicDBObject("$set", newPostData);
+                    storeUpdate.updateMulti(oldPostData, update);
+                }
+            }
+            else {
+
+                DBCollection store = db.getCollection(strFirstName);
+                // System.out.println(topPost.size());
+                for (UPost postData : topPost) {
+                    BasicDBObject post = new BasicDBObject();
+                    post.append("UserID", postData.getUserId());
+                    post.append("PostID", postData.getPostId());
+                    post.append("PostMessage", postData.getPostMessage());
+                    post.append("postMonth", postData.getPostMonth());
+                    post.append("postYear", postData.getPostYear());
+                    post.append("statusType", postData.getStatusType());
+                    post.append("story", postData.getStory());
+                    post.append("type", postData.getType());
+                    post.append("description", postData.getDescription());
+                    post.append("likesCount", postData.getLikesCount());
+                    post.append("rating", postData.getRating());
+                    post.append("postImageURL", postData.getPostImage());
+                    store.insert(post);
+                }
+            }
+        }
+        catch(UnknownHostException e)
+        {
+            System.out.println("Could not connected");
+        }
+    }
+
 
     public User  getAbout(FacebookClient fbClient){
         User me = fbClient.fetchObject("me", com.restfb.types.User.class);
