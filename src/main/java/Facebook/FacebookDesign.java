@@ -197,7 +197,7 @@ public class FacebookDesign {
 
     public void storeInDatabase(ArrayList<UPost> topPost)
     {
-        String textUri = "mongodb://cmpe273:cmpe273@ds031651.mongolab.com:31651/facebook_moments";
+        String textUri = "mongodb://cmpe273:cmpe273@ds043981.mongolab.com:43981/facebook_moments";
         MongoClientURI uri = new MongoClientURI(textUri);
         try {
             MongoClient client = new MongoClient(uri);
