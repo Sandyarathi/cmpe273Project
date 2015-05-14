@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Class holds Facebook data
  * Created by Nakul Sharma on 18-04-2015.
+ * Updated by Nakul Sharma on 13-05-2015.
  */
 public class UPost implements Comparable<UPost> {
 
@@ -43,7 +44,7 @@ public class UPost implements Comparable<UPost> {
         this.userId = userId;
     }
 
-    //    @JsonIgnore
+
     public String getPostId() {
         return postId;
     }
@@ -97,6 +98,7 @@ public class UPost implements Comparable<UPost> {
         this.commentCount = commentCount;
     }
 
+    @JsonIgnore
     public String getStatusType() {
         return statusType;
     }
@@ -105,6 +107,7 @@ public class UPost implements Comparable<UPost> {
         this.statusType = statusType;
     }
 
+    @JsonIgnore
     public String getStory() {
         return story;
     }
@@ -113,7 +116,7 @@ public class UPost implements Comparable<UPost> {
         this.story = story;
     }
 
-    //    @JsonIgnore
+    @JsonIgnore
     public String getType() {
         return type;
     }
@@ -122,11 +125,12 @@ public class UPost implements Comparable<UPost> {
         this.type = type;
     }
 
+    @JsonIgnore
     public String getDescription() {
         return description;
     }
 
-    //      @JsonIgnore
+
     public void setDescription(String description) {
         this.description = description;
     }
